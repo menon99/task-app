@@ -26,15 +26,26 @@ const User = mongoose.model('User', {
         type: types.String,
         trim: true,
         lowercase: true,
+        required: true,
         validate(value) {
             if (!validator.isEmail(value)) throw new Error('Not a valid email');
+        },
+    },
+    password: {
+        type: types.String,
+        required: true,
+        minlength: 6,
+        trim: true,
+        validate(value) {
+            if (value.toLowerCase().includes('password')) throw new Error('password should not be "password"');
         }
     }
 });
 
 let me = new User({
     age: 23,
-    email: ' laca@rediff.com  ',
+    email: 'auba@rediff.com  ',
+    password: ' acas '
 });
 
 me.save().then(me => {
