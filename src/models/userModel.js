@@ -3,12 +3,6 @@ const validator = require('validator');
 
 const types = mongoose.Schema.Types;
 
-mongoose.connect('mongodb://127.0.0.1:27017/task-manager-api', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true
-});
-
 const User = mongoose.model('User', {
     name: {
         type: types.String,
@@ -42,16 +36,18 @@ const User = mongoose.model('User', {
     }
 });
 
-let me = new User({
-    age: 23,
-    email: 'auba@rediff.com  ',
-    password: ' acas '
-});
+module.exports = User;
 
-me.save().then(me => {
-    console.log('saved');
-    console.log(me);
-}).catch(error => {
-    console.log('Oops');
-    console.log(error.message);
-});
+// let me = new User({
+//     age: 23,
+//     email: 'auba@rediff.com  ',
+//     password: ' acas '
+// });
+
+// me.save().then(me => {
+//     console.log('saved');
+//     console.log(me);
+// }).catch(error => {
+//     console.log('Oops');
+//     console.log(error.message);
+// });
