@@ -30,7 +30,7 @@ router.get('/tasks/:id', (req, res) => {
             return res.status(404).send('task not found');
         res.send(task);
     }).catch(error => {
-        res.status(404).send('No such task found!');
+        res.status(400).send('Invalid id format');
     });
 });
 

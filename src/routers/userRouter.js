@@ -32,7 +32,7 @@ router.get('/users/:id', (req, res) => {
             return res.status(404).send('User not found');
         res.status(200).send(user);
     }).catch(error => {
-        res.status(404).send('No such user found!');
+        res.status(400).send('Invalid id format');
     });
 });
 
