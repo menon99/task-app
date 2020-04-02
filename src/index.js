@@ -8,7 +8,6 @@ const app = express();
 
 app.use(userRouter);
 app.use(taskRouter);
-app.use(express.json());
 
 const port = process.env.PORT || 8000;
 
