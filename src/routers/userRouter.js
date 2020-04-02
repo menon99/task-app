@@ -5,23 +5,21 @@ const User = require("../models/userModel");
 const router = express.Router();
 router.use(express.json());
 
-router.post("/users", (req, res) => {
-    let u1 = new User(req.body);
-    u1.save()
-        .then(user => {
-            res.status(201);
-            res.send(user);
-        })
-        .catch(error => {
-            res.status(400);
-            res.send(error.message);
-        });
+router.post("/users", async(req, res) => {
+    try {
+        let user = new User(req.body);
+        const token = await user.getAuthToken();
+        res.status(202).send({ user, token });
+    } catch (e) {
+        res.status(404).send(e.message);
+    }
 });
 
 router.post('/users/login', async(req, res) => {
     try {
         const user = await User.findByCredentials(req.body.email, req.body.password);
-        res.status(202).send(user);
+        const token = await user.getAuthToken();
+        res.status(202).send({ user, token });
     } catch (e) {
         res.status(404).send(e.message);
     }
