@@ -13,13 +13,3 @@ const Task = mongoose.model('task', {
 });
 
 module.exports = Task;
-
-// let t1 = new Task({});
-
-// t1.save().then(result => {
-//     console.log(result);
-//     console.log('done');
-// }).catch(error => {
-//     console.log('Oops');
-//     console.log(error.message);
-// });
