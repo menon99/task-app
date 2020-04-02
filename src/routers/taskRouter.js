@@ -3,6 +3,7 @@ const express = require('express');
 const Task = require('../models/taskModel');
 
 const router = express.Router();
+router.use(express.json());
 
 router.post('/tasks', (req, res) => {
     let t1 = new Task(req.body);
