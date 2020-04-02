@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const bcrypt = require('bcryptjs');
 
 const types = mongoose.Schema.Types;
-
-const User = mongoose.model('User', {
+const userSchema = new mongoose.Schema({
     name: {
         type: types.String,
         trim: true,
@@ -11,7 +11,7 @@ const User = mongoose.model('User', {
     },
     age: {
         type: types.Number,
-        default: 0,
+        default: 1,
         validate(value) {
             if (value <= 0) throw new Error('Age must be greater than 0');
         }
@@ -19,6 +19,7 @@ const User = mongoose.model('User', {
     email: {
         type: types.String,
         trim: true,
+        unique: true,
         lowercase: true,
         required: true,
         validate(value) {
@@ -36,18 +37,23 @@ const User = mongoose.model('User', {
     }
 });
 
+userSchema.statics.findByCredentials = async(email, password) => {
+    const user = await User.findOne({ email: email });
+    if (!user)
+        throw new Error('Unable to login');
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if (!isPasswordMatch)
+        throw new Error('Unable to login');
+    else
+        return user;
+};
+
+userSchema.pre('save', async function() {
+    const user = this;
+    if (user.isModified('password'))
+        user.password = await bcrypt.hash(user.password, 8);
+});
+
+const User = mongoose.model('User', userSchema);
+
 module.exports = User;
-
-// let me = new User({
-//     age: 23,
-//     email: 'auba@rediff.com  ',
-//     password: ' acas '
-// });
-
-// me.save().then(me => {
-//     console.log('saved');
-//     console.log(me);
-// }).catch(error => {
-//     console.log('Oops');
-//     console.log(error.message);
-// });
