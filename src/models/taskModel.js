@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const Task = mongoose.model('task', {
+const taskSchema = new mongoose.Schema({
     description: {
         type: String,
         required: true,
@@ -9,7 +9,21 @@ const Task = mongoose.model('task', {
     status: {
         type: Boolean,
         default: false,
+    },
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'User',
     }
 });
+
+taskSchema.methods.toJSON = function() {
+    const task = this.toObject();
+    delete task.__v;
+    delete task.owner;
+    return task;
+};
+
+const Task = mongoose.model('task', taskSchema);
 
 module.exports = Task;
