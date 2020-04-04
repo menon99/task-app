@@ -1,12 +1,16 @@
 const express = require('express');
 
+const auth = require('../middleware/auth');
 const Task = require('../models/taskModel');
 
 const router = express.Router();
 router.use(express.json());
 
-router.post('/tasks', (req, res) => {
-    let t1 = new Task(req.body);
+router.post('/tasks', auth, (req, res) => {
+    let t1 = new Task({
+        ...req.body,
+        owner: req.user._id
+    });
     t1.save().then(task => {
         res.status(201).send(task);
     }).catch(error => {
@@ -14,8 +18,8 @@ router.post('/tasks', (req, res) => {
     });
 });
 
-router.get('/tasks', (req, res) => {
-    Task.find().then(tasks => {
+router.get('/tasks', auth, (req, res) => {
+    Task.find({ owner: req.user._id }).then(tasks => {
         if (!tasks)
             return res.status(404).send('No tasks found');
         res.send(tasks);
@@ -24,48 +28,41 @@ router.get('/tasks', (req, res) => {
     });
 });
 
-router.get('/tasks/:id', (req, res) => {
-    let id = req.params.id;
-    Task.findById(id).then(task => {
-        if (!task)
-            return res.status(404).send('task not found');
-        res.send(task);
+router.get('/tasks/:id', auth, (req, res) => {
+    Task.findOne({ _id: req.params.id, owner: req.user._id }).then(task => {
+        res.status(200).send(task);
     }).catch(error => {
-        res.status(400).send('Invalid id format');
+        return res.status(404).send('Task not found');
     });
 });
 
-router.patch('/tasks/:id', async(req, res) => {
+router.patch('/tasks/:id', auth, async(req, res) => {
     const allowedUpdates = ['description', 'status'];
     const updates = Object.keys(req.body);
     const isValidUpdates = updates.every(element => {
         return allowedUpdates.includes(element);
     });
-    console.log(isValidUpdates);
     if (!isValidUpdates)
         return res.status(406).send('invalid Updates!');
     try {
-        let task = await Task.findByIdAndUpdate(req.params.id, req.body, {
-            new: true,
-            runValidators: true,
-        });
+        const task = await Task.findOne({ _id: req.params.id, owner: req.user._id });
         if (!task)
-            return res.status(404).send('Status not found');
-        res.status(205).send(task);
+            return res.status(404).send('No such task');
+        updates.forEach(update => task[update] = req.body[update]);
+        await task.save();
+        res.send(task);
     } catch (e) {
-        res.status(400).send('Update not valid');
+        res.status(400).send(e.message);
     }
 });
 
-router.delete('/tasks/:id', async(req, res) => {
-    try {
-        let task = await Task.findByIdAndDelete(req.params.id);
-        if (!task)
-            return res.status(404).send('Task not found');
+router.delete('/tasks/:id', auth, (req, res) => {
+    Task.findOne({ _id: req.params.id, owner: req.user._id }).then(task => {
+        task.remove();
         res.status(200).send(task);
-    } catch (e) {
-        res.status(400).send('invalid id structure');
-    }
+    }).catch(error => {
+        return res.status(404).send('Task not found');
+    });
 });
 
 module.exports = router;
