@@ -18,14 +18,32 @@ router.post('/tasks', auth, (req, res) => {
     });
 });
 
-router.get('/tasks', auth, (req, res) => {
-    Task.find({ owner: req.user._id }).then(tasks => {
-        if (!tasks)
-            return res.status(404).send('No tasks found');
-        res.send(tasks);
-    }).catch(error => {
-        req.status(500).send('service down');
-    });
+router.get('/tasks', auth, async(req, res) => {
+    let match = {};
+    if ('status' in req.query) {
+        match.status = req.query.status;
+        if (match.status != 'true' && match.status != 'false')
+            return res.status(400).send('improper query values');
+    }
+    const user = req.user;
+    let sort = {};
+    if (req.query.sortBy) {
+        let parts = req.query.sortBy.split(':');
+        parts[1] = parts[1] === 'asc' ? 1 : -1;
+        sort[parts[0]] = parts[1];
+    }
+    await user.populate({
+        path: 'tasks',
+        match,
+        options: {
+            limit: parseInt(req.query.limit),
+            skip: parseInt(req.query.skip),
+            sort,
+        }
+    }).execPopulate();
+    if (user.tasks.length == 0)
+        return res.status(404).send('No tasks found');
+    return res.send(user.tasks);
 });
 
 router.get('/tasks/:id', auth, (req, res) => {
