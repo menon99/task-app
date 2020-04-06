@@ -37,6 +37,9 @@ const userSchema = new mongoose.Schema({
             if (value.toLowerCase().includes('password')) throw new Error('password should not be "password"');
         }
     },
+    avatar: {
+        type: types.Buffer,
+    },
     tokens: [{
         token: {
             type: types.String,
