@@ -9,7 +9,7 @@ const app = express();
 app.use(userRouter);
 app.use(taskRouter);
 
-const port = process.env.PORT || 8000;
+const port = process.env.PORT;
 
 app.get('', (req, res) => {
     res.send('<h1>Hello world</h1>');
